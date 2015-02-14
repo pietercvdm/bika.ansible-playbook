@@ -27,14 +27,25 @@
         - libcairo2
         - libpango1.0-0
         - libgdk-pixbuf2.0-0
+        - ssl-cert
+        - nginx
+        - varnish
 
-    ### Create Plone zeocluster and Plone site.
+    ### Create Plone zeocluster and Plone site #################################
 
     - include: ../ansible.plone_server/tasks/main.yml
       tags:
         - plone
 
-    ### nginx server installation
+    # Run the command if the specified file does not exist.
+    - name: Ensure that admin user is created
+      command: bin/client_reserved adduser admin {{ plone_initial_password }}
+      args:
+        chdir: "{{ plone_target_path }}/{{ plone_instance_name }}"
+      tags:
+        - plone
+
+    ### nginx server ###########################################################
 
     - name: nginx - Install
       apt: pkg=nginx state=present
@@ -45,27 +56,15 @@
       template:
         src=../templates/nginx-proxy_params.conf.j2
         dest=/etc/nginx/proxy_params.conf
-        owner=root
-        group=root
-        backup=yes
       tags:
         - nginx
 
-    ### Configure nginx site
-
-    - name: Check if nginx site is available
-      stat: path=/etc/nginx/sites-available/{{ host }}.conf
-      register: available
-      tags:
-        - nginx
+    ### nginx site #############################################################
 
     - name: Add to sites-available
       template:
         src=../templates/nginx-site.conf.j2
         dest=/etc/nginx/sites-available/{{ host }}.conf
-        owner=root
-        group=root
-        backup=yes
       notify: restart nginx
       tags:
         - nginx
@@ -79,103 +78,41 @@
       tags:
         - nginx
 
-#   ### SSL Folder must exist:
-#    - name: Check if SSL config folder exists
-#      stat: path=/etc/nginx/ssh
-#      register: ssl_folder
-#      tags:
-#        - ssl
-#    - name: Always check that SSL config folder exists.
-#      file:
-#        path=/etc/nginx/ssh
-#        state=directory
-#        owner=root
-#        group=root
-#      when: not ssl_folder.stat.exists
-#      tags:
-#        - ssl
-#    ### Copy SSL files if present see nginx-site.conf.j2):
-#    - name: Check if SSL config folder exists
-#      stat: path=../hosts/{{ host }}/ssl
-#      register: local_ssl_folder
-#      tags:
-#        - ssl
-#    - name: Create folder for SSL cert
-#      file:
-#        path=/etc/nginx/ssh/{{ host }}
-#        state=directory
-#        owner=plone_buildout
-#        group=plone_group
-#      when: local_ssl_folder.stat.exists
-#      tags:
-#        - ssl
-#    - name: Copy SSL folder to server
-#      when: local_ssl_folder
-#      copy:
-#        src=../hosts/{{ host }}/ssl
-#        dest={{ plone_target_path }}/{{ plone_instance_name }}
-#        owner=plone_buildout
-#        group=plone_group
-
-    ## varnish server installation
-
-    - name: varnish - Install
-      apt: pkg=varnish state=present
-      register: varnish_install
-      tags:
-        - varnish
+    ### varnish server #########################################################
 
     - name: varnish - /etc/varnish/default.vcl
-#      when: varnish_install.changed
       template:
         src=../templates/varnish-default.vcl.j2
         dest=/etc/varnish/default.vcl
-        owner=root
-        group=root
-        backup=yes
       tags:
         - varnish
 
-    ### Varnish - Create basic folder/files:
-
-    - name: create varnish/sites folder.
-      file:
-        path=/etc/varnish/sites
-        state=directory
-        owner=root
-        group=root
+    - name: create varnish/sites folder
+      file: path=/etc/varnish/sites state=directory
       tags:
         - varnish
 
-    - name: create sites.vcl.
-      copy:
-        src=../templates/sites.vcl.j2
-        dest=/etc/varnish/sites.vcl
-        owner=root
-        group=root
-        force=no
+    - name: create varnish/sites.vcl
+      copy: src=../templates/sites.vcl.j2 dest=/etc/varnish/sites.vcl force=no
       tags:
         - varnish
 
-    ### Configure varnish for this site
+    ### varnish site ###########################################################
 
-    - name: add include to sites.vcl
-      lineinfile:
-        dest=/etc/varnish/sites.vcl
-        regexp='.*{{ host }}.*'
-        insertbefore=BOF
-        line='include "/etc/varnish/sites/{{ host }}.vcl";'
-      tags:
-        - varnish
-
-    - name: Add varnish configuration
+    - name: Add varnish site configuration
       template:
         src=../templates/varnish-site.vcl.j2
         dest=/etc/varnish/sites/{{ host }}.vcl
-        owner=root
-        group=root
-        backup=yes
       notify: restart varnish
+      tags:
+        - varnish
+
+    - name: add site include to sites.vcl
+      lineinfile:
+        dest=/etc/varnish/sites.vcl
+        regexp='^{{ host }}$'
+        insertbefore=BOF
+        line='include "/etc/varnish/sites/{{ host }}.vcl";'
       tags:
         - varnish
 
