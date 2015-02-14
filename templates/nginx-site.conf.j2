@@ -1,0 +1,45 @@
+upstream {{ host }}_upstream {
+    server localhost:6081;
+}
+
+# http
+server {
+    listen 80;
+    server_name {{ server_name }};
+    access_log off;
+    rewrite ^(.*)(/login_|/require_login|/failsafe_login_form)(.*) https://$server_name$1$2$3 redirect;
+    # logged in?  https only.
+    if ($http_cookie ~* "__ac=([^;]+)(?:;|$)" ) {
+        rewrite ^(.*) https://$host/$1 redirect;
+    }
+    location / {
+        include /etc/nginx/proxy_params.conf;
+        proxy_pass http://{{ host }}_upstream/VirtualHostBase/http/{{ server_name }}:80/{{ plone_site_id }}/VirtualHostRoot/;
+    }
+}
+
+# https
+server {
+    listen 443 ssl;
+    server_name {{ server_name }};
+
+    ssl_certificate /etc/nginx/ssl/bikalabs.com/crt;
+    ssl_certificate_key /etc/nginx/ssl/bikalabs.com/key;
+
+    ssl_session_timeout 10m;
+    ssl_protocols SSLv3 TLSv1;
+    ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
+    ssl_prefer_server_ciphers on;
+    access_log off;
+    if ($http_cookie ~* "__ac=([^;]+)(?:;|$)" ) {
+        # prevent infinite recursions between http and https
+        break;
+    }
+    rewrite ^(.*)(/logged_out)(.*) http://$server_name$1$2$3 redirect;
+    location / {
+        include /etc/nginx/proxy_params.conf;
+        proxy_pass http://{{ host }}_upstream/VirtualHostBase/https/{{ server_name }}:443/{{ plone_site_id }}/VirtualHostRoot/;
+
+    }
+}
+

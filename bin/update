@@ -1,0 +1,2 @@
+INSTANCE=$1
+ansible-playbook -i hosts/hosts.cfg hosts/$INSTANCE-configure.yml
