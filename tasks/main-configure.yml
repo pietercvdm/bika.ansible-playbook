@@ -5,12 +5,13 @@
 
   vars_files:
     - "../ansible.plone_server/defaults/main.yml"
+    - "../defaults/main.yml"
     - "../hosts/port_base.yml"
     - "../hosts/{{ host }}-vars.yml"
 
   tasks:
 
-    ### Bika dependenciesfine.
+    ### Bika dependencies ######################################################
 
     - name: Bika dependencies - Install
       apt: pkg={{ item }} state=present

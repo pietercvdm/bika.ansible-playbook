@@ -23,13 +23,13 @@ server {
     listen 443 ssl;
     server_name {{ server_name }};
 
-    ssl_certificate /etc/nginx/ssl/bikalabs.com/crt;
-    ssl_certificate_key /etc/nginx/ssl/bikalabs.com/key;
-
+    ssl_certificate {{ ssl_certificate }};
+    ssl_certificate_key {{ ssl_certificate_key }};
     ssl_session_timeout 10m;
     ssl_protocols SSLv3 TLSv1;
     ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
     ssl_prefer_server_ciphers on;
+
     access_log off;
     if ($http_cookie ~* "__ac=([^;]+)(?:;|$)" ) {
         # prevent infinite recursions between http and https
