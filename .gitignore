@@ -1,3 +1,7 @@
+# I don't want to commit hosts/* or hosts.cfg here.
+hosts*
+
+
 *.log
 *.mo
 *.orig
@@ -31,3 +35,4 @@ report.html
 selenium-screenshot*
 Thumbs.db
 var
+atlassian*.xml
