@@ -1,0 +1,23 @@
+---
+- hosts: all
+  sudo: true
+  gather_facts: false
+
+  vars_files:
+    - "../ansible.plone_server/defaults/main.yml"
+    - "../defaults/main.yml"
+    - "../hosts/port_base.yml"
+    - "../hosts/{{ host }}-vars.yml"
+
+  tasks:
+
+    - name: Supervisor zeoclient tasks are restarted
+      supervisorctl:
+        name={{ supervisor_instance_name or ''}}zeoclient{{ item }}
+        state=restarted
+      with_sequence: count={{ plone_client_count }}
+
+    - name: Supervisor zeoserver restarted
+      supervisorctl:
+        name={{ supervisor_instance_name or ''}}zeoserver
+        state=restarted

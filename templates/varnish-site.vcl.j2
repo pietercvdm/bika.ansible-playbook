@@ -6,15 +6,14 @@ backend {{ host }}_zeoclient{{ client }} {
     .first_byte_timeout = 300s;
     .between_bytes_timeout = 600s;
     .max_connections = 30;
-#  The root URL was subverted for Bika purposes! :/
-#    .probe = {
-#      .url = "/Plone/manage_main";
-#      .interval = 5s;
-#      .timeout = 3s;
-#      .window = 5;
-#      .threshold = 2;
-#      .initial = 1;
-#    }
+    .probe = {
+      .url = "/{{ plone_site_id }}/misc_/CMFPlone/site_icon.png";
+      .interval = 5s;
+      .timeout = 3s;
+      .window = 5;
+      .threshold = 2;
+      .initial = 1;
+    }
 }
 
 {% endfor %}

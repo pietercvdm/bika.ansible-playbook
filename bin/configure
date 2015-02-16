@@ -1,3 +1,0 @@
-INSTANCE=$1
-shift
-ansible-playbook -i hosts/hosts.cfg --extra-vars "host=$INSTANCE" $@ tasks/main-configure.yml

@@ -1,0 +1,59 @@
+---
+- hosts: all
+  sudo: true
+  gather_facts: false
+
+  tasks:
+
+    ### Bika dependencies ######################################################
+
+    - name: Bika dependencies - Install
+      apt: pkg={{ item }} state=present
+      with_items:
+        - libffi-dev
+        - gcc
+        - zlib1g-dev
+        - libexpat1-dev
+        - libxslt1.1
+        - gnuplot
+        - libpcre3
+        - libpcre3-dev
+        - libcairo2
+        - libpango1.0-0
+        - libgdk-pixbuf2.0-0
+        - ssl-cert
+        - nginx
+        - varnish
+
+    ### nginx server ###########################################################
+
+    - name: nginx - Install
+      apt: pkg=nginx state=present
+      tags:
+        - nginx
+
+    - name: nginx - /etc/nginx/proxy_params.conf
+      template:
+        src=../templates/nginx-proxy_params.conf.j2
+        dest=/etc/nginx/proxy_params.conf
+      tags:
+        - nginx
+
+    ### varnish server #########################################################
+
+    - name: varnish - /etc/varnish/default.vcl
+      template:
+        src=../templates/varnish-default.vcl.j2
+        dest=/etc/varnish/default.vcl
+      tags:
+        - varnish
+
+    - name: create varnish/sites folder
+      file: path=/etc/varnish/sites state=directory
+      tags:
+        - varnish
+
+    - name: create varnish/sites.vcl
+      copy: src=../templates/sites.vcl.j2 dest=/etc/varnish/sites.vcl force=no
+      tags:
+        - varnish

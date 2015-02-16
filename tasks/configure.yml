@@ -1,5 +1,5 @@
 ---
-- hosts: "{{ host }}"
+- hosts: all
   sudo: true
   gather_facts: false
 
@@ -11,53 +11,29 @@
 
   tasks:
 
-    ### Bika dependencies ######################################################
-
-    - name: Bika dependencies - Install
-      apt: pkg={{ item }} state=present
-      with_items:
-        - libffi-dev
-        - gcc
-        - zlib1g-dev
-        - libexpat1-dev
-        - libxslt1.1
-        - gnuplot
-        - libpcre3
-        - libpcre3-dev
-        - libcairo2
-        - libpango1.0-0
-        - libgdk-pixbuf2.0-0
-        - ssl-cert
-        - nginx
-        - varnish
-
     ### Create Plone zeocluster and Plone site #################################
 
     - include: ../ansible.plone_server/tasks/main.yml
       tags:
         - plone
 
-    # Run the command if the specified file does not exist.
+    - name: Ensure always-checkout = true
+      lineinfile:
+        dest={{ plone_target_path }}/{{ plone_instance_name }}/buildout.cfg
+        insertafter='^auto-checkout.*'
+        line='always-checkout = true'
+      tags:
+        - plone
+        - buildout
+
+    # add passwd just in case
     - name: Ensure that admin user is created
       command: bin/client_reserved adduser admin {{ plone_initial_password }}
       args:
         chdir: "{{ plone_target_path }}/{{ plone_instance_name }}"
+      sudo_user: plone_daemon
       tags:
         - plone
-
-    ### nginx server ###########################################################
-
-    - name: nginx - Install
-      apt: pkg=nginx state=present
-      tags:
-        - nginx
-
-    - name: nginx - /etc/nginx/proxy_params.conf
-      template:
-        src=../templates/nginx-proxy_params.conf.j2
-        dest=/etc/nginx/proxy_params.conf
-      tags:
-        - nginx
 
     ### nginx site #############################################################
 
@@ -78,25 +54,6 @@
       tags:
         - nginx
 
-    ### varnish server #########################################################
-
-    - name: varnish - /etc/varnish/default.vcl
-      template:
-        src=../templates/varnish-default.vcl.j2
-        dest=/etc/varnish/default.vcl
-      tags:
-        - varnish
-
-    - name: create varnish/sites folder
-      file: path=/etc/varnish/sites state=directory
-      tags:
-        - varnish
-
-    - name: create varnish/sites.vcl
-      copy: src=../templates/sites.vcl.j2 dest=/etc/varnish/sites.vcl force=no
-      tags:
-        - varnish
-
     ### varnish site ###########################################################
 
     - name: Add varnish site configuration
@@ -110,7 +67,7 @@
     - name: add site include to sites.vcl
       lineinfile:
         dest=/etc/varnish/sites.vcl
-        regexp='^{{ host }}$'
+        regexp='.*{{ host }}.*'
         insertbefore=BOF
         line='include "/etc/varnish/sites/{{ host }}.vcl";'
       tags:
@@ -122,4 +79,5 @@
 
     - name: restart varnish
       service: name=varnish state=restarted
+
 
