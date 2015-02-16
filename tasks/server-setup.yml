@@ -29,15 +29,11 @@
 
     - name: nginx - Install
       apt: pkg=nginx state=present
-      tags:
-        - nginx
 
     - name: nginx - /etc/nginx/proxy_params.conf
       template:
         src=../templates/nginx-proxy_params.conf.j2
         dest=/etc/nginx/proxy_params.conf
-      tags:
-        - nginx
 
     ### varnish server #########################################################
 
@@ -45,15 +41,9 @@
       template:
         src=../templates/varnish-default.vcl.j2
         dest=/etc/varnish/default.vcl
-      tags:
-        - varnish
 
     - name: create varnish/sites folder
       file: path=/etc/varnish/sites state=directory
-      tags:
-        - varnish
 
     - name: create varnish/sites.vcl
       copy: src=../templates/sites.vcl.j2 dest=/etc/varnish/sites.vcl force=no
-      tags:
-        - varnish

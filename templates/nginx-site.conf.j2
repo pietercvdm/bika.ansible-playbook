@@ -1,4 +1,4 @@
-upstream {{ host }}_upstream {
+upstream {{ inventory_hostname }}_upstream {
     server localhost:6081;
 }
 
@@ -14,7 +14,7 @@ server {
     }
     location / {
         include /etc/nginx/proxy_params.conf;
-        proxy_pass http://{{ host }}_upstream/VirtualHostBase/http/{{ server_name }}:80/{{ plone_site_id }}/VirtualHostRoot/;
+        proxy_pass http://{{ inventory_hostname }}_upstream/VirtualHostBase/http/{{ server_name }}:80/{{ plone_site_id }}/VirtualHostRoot/;
     }
 }
 
@@ -38,7 +38,7 @@ server {
     rewrite ^(.*)(/logged_out)(.*) http://$server_name$1$2$3 redirect;
     location / {
         include /etc/nginx/proxy_params.conf;
-        proxy_pass http://{{ host }}_upstream/VirtualHostBase/https/{{ server_name }}:443/{{ plone_site_id }}/VirtualHostRoot/;
+        proxy_pass http://{{ inventory_hostname }}_upstream/VirtualHostBase/https/{{ server_name }}:443/{{ plone_site_id }}/VirtualHostRoot/;
 
     }
 }

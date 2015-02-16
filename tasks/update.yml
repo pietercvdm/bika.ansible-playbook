@@ -6,8 +6,7 @@
   vars_files:
     - "../ansible.plone_server/defaults/main.yml"
     - "../defaults/main.yml"
-    - "../hosts/port_base.yml"
-    - "../hosts/{{ host }}-vars.yml"
+    - "../host_vars/{{ inventory_hostname }}"
 
   tasks:
 
@@ -20,8 +19,19 @@
         - update
         - sources
 
+    - name: Run buildout
+      sudo_user: plone_buildout
+      command: bin/buildout
+      args:
+        chdir: "{{ plone_target_path }}/{{ plone_instance_name }}"
+      tags:
+        - update
+        - buildout
+
     - name: restart zeoclients
       supervisorctl:
         name={{ supervisor_instance_name or ''}}zeoclient{{ item }}
         state=restarted
       with_sequence: count={{ plone_client_count }}
+        - update
+        - restart

@@ -1,18 +1,27 @@
 bika.ansible-playbook
 =====================
 
-Configures multiple load-balanced Plone zeoclusters behind nginx and varnish.
+Configure and manage multiple load-balanced Plone zeoclusters behind 
+nginx and varnish.
  
-1) clone the repository
+1) Clone the repository
 
-2) copy hosts/example-vars.yml to /hosts/{{ instance_identifier }}-vars.yml,
-   and edit it.
+    git clone https://github.com/bikalabs/bika.ansible-playbook.git
+    cd bika.ansible-playbook
 
-3) Setup some servers:
+2) Create ansible hosts file at ./hosts.cfg.
 
-    bin/configure {{ instance_identifier }}"
+3) Copy host_vars/example to /host_vars/{{ instance_id }}.
+   edit the file, and save it.
 
-Additional parameters are passed straight to ansible-playbook.
+4) Setup some servers:
 
-The bin/configure contains the ansible-playbook command, and it assumes that 
-ansible-playbook is in the path.
+  bin/bapl setup-server server_host    # one-time deps, etc
+  bin/bapl configure example_instance  # plone instance
+  bin/bapl update example_instance     # update src/
+  bin/bapl stop example_instance       # supervisor command
+  bin/bapl start example_instance      # supervisor command
+  
+Additional parameters are passed straight to ansible-playbook,
+so you can use --check and --diff etc, and you can also use "all"
+for the instance, and add your own --limit= arguments.

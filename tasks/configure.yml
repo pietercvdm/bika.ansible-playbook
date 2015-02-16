@@ -6,8 +6,8 @@
   vars_files:
     - "../ansible.plone_server/defaults/main.yml"
     - "../defaults/main.yml"
-    - "../hosts/port_base.yml"
-    - "../hosts/{{ host }}-vars.yml"
+    - "../port_base.yml"
+    - "../host_vars/{{ inventory_hostname }}"
 
   tasks:
 
@@ -19,12 +19,11 @@
 
     - name: Ensure always-checkout = true
       lineinfile:
-        dest={{ plone_target_path }}/{{ plone_instance_name }}/buildout.cfg
-        insertafter='^auto-checkout.*'
-        line='always-checkout = true'
+        dest="{{ plone_target_path }}/{{ plone_instance_name }}/buildout.cfg"
+        insertafter="^auto-checkout.*"
+        line="always-checkout = true"
       tags:
         - plone
-        - buildout
 
     # add passwd just in case
     - name: Ensure that admin user is created
@@ -40,15 +39,15 @@
     - name: Add to sites-available
       template:
         src=../templates/nginx-site.conf.j2
-        dest=/etc/nginx/sites-available/{{ host }}.conf
+        dest=/etc/nginx/sites-available/{{ inventory_hostname }}.conf
       notify: restart nginx
       tags:
         - nginx
 
     - name: Add to sites-enabled
       file:
-        src=/etc/nginx/sites-available/{{ host }}.conf
-        dest=/etc/nginx/sites-enabled/{{ host }}.conf
+        src=/etc/nginx/sites-available/{{ inventory_hostname }}.conf
+        dest=/etc/nginx/sites-enabled/{{ inventory_hostname }}.conf
         state=link
       notify: restart nginx
       tags:
@@ -59,7 +58,7 @@
     - name: Add varnish site configuration
       template:
         src=../templates/varnish-site.vcl.j2
-        dest=/etc/varnish/sites/{{ host }}.vcl
+        dest=/etc/varnish/sites/{{ inventory_hostname }}.vcl
       notify: restart varnish
       tags:
         - varnish
@@ -67,9 +66,9 @@
     - name: add site include to sites.vcl
       lineinfile:
         dest=/etc/varnish/sites.vcl
-        regexp='.*{{ host }}.*'
+        regexp='.*{{ inventory_hostname }}.*'
         insertbefore=BOF
-        line='include "/etc/varnish/sites/{{ host }}.vcl";'
+        line='include "/etc/varnish/sites/{{ inventory_hostname }}.vcl";'
       tags:
         - varnish
 

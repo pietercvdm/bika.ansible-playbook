@@ -1,6 +1,7 @@
-# I don't want to commit hosts/* or hosts.cfg here.
-hosts*
-
+# I don't want to commit hosts here.
+hosts.cfg
+host_vars/*
+port_base.yml
 
 *.log
 *.mo

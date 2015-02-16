@@ -1,5 +1,5 @@
 {% for client in range(1, plone_client_count + 1) %}
-backend {{ host }}_zeoclient{{ client }} {
+backend {{ inventory_hostname }}_zeoclient{{ client }} {
     .host = "127.0.0.1";
     .port = "{{ '%s'%(plone_client_base_port|int + loop.index-1) }}";
     .connect_timeout = 10s;
@@ -18,14 +18,14 @@ backend {{ host }}_zeoclient{{ client }} {
 
 {% endfor %}
 
-director {{ host }}_director client {
+director {{ inventory_hostname }}_director client {
 {% for client in range(1, plone_client_count + 1) %}
-        { .backend = {{ host }}_zeoclient{{ client }}; .weight = 5; }
+        { .backend = {{ inventory_hostname }}_zeoclient{{ client }}; .weight = 5; }
 {% endfor %}
 }
 
 sub vcl_recv {
-    if (req.http.host ~ "^{{ server_name }}$")  { set req.backend = {{host}}_director; }
+    if (req.http.host ~ "^{{ server_name }}$")  { set req.backend = {{ inventory_hostname }}_director; }
 }
 
 # store in cache only by url, not backend host
