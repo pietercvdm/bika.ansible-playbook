@@ -1,0 +1,3 @@
+[submodule "ansible.plone_server"]
+	path = ansible.plone_server
+	url = git@github.com:rockfruit/ansible.plone_server
