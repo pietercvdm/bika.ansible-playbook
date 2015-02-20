@@ -9,9 +9,18 @@ nginx and varnish.
     git clone https://github.com/bikalabs/bika.ansible-playbook.git
     cd bika.ansible-playbook
 
-2) Create ansible hosts inventory.  I use ./hosts.cfg, it's in .gitignore.
+2) do the little submodule dance
 
-3) Create host_vars for each instance you need to create.  Copy
+    git submodule update --init ansible.plone_server
+    
+> This checks out ansible.plone_server from a branch which disambiguates
+  between supervisor/cron instances on the same server.  When this
+  gets implemented into plone/ansible.plone_server, the behaviour
+  we have here might change a little.
+
+3) Create ansible hosts inventory.  I use ./hosts.cfg, it's in .gitignore.
+
+4) Create host_vars for each instance you need to create.  Copy
    host_vars/example to /host_vars/{{ host }}. edit the
    file, and save it.
 
