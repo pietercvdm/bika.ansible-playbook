@@ -3,6 +3,10 @@
   sudo: true
   gather_facts: false
 
+  vars_files:
+    - "../defaults/server-setup.yml"
+    - "../host_vars/{{ inventory_hostname }}"
+
   tasks:
 
     ### Bika dependencies ######################################################
@@ -24,6 +28,8 @@
         - ssl-cert
         - nginx
         - varnish
+        - munin
+        - munin-node
 
     ### nginx server ###########################################################
 
