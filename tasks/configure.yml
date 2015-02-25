@@ -13,6 +13,11 @@
 
     ### Create Plone zeocluster and Plone site #################################
 
+    - name: Fail if port numbers not specified
+      fail:
+        msg: "You must set {{ inventory_hostname }}_port_base in port_bases.yml."
+      when: not {{ inventory_hostname }}_port_base
+
     - include: ../ansible.plone_server/tasks/main.yml
       tags:
         - plone
