@@ -26,7 +26,7 @@
       lineinfile:
         dest="{{ plone_target_path }}/{{ plone_instance_name }}/buildout.cfg"
         insertafter="^auto-checkout.*"
-        line="always-checkout = true"
+        line="always-checkout = force"
       tags:
         - plone
 
