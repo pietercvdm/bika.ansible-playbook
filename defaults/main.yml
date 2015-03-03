@@ -1,2 +1,3 @@
 ---
 plone_backup_path: /var/local/plone-{{ plone_major_version }}/backup
+always_checkout: true
