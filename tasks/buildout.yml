@@ -1,0 +1,43 @@
+---
+- hosts: all
+  sudo: true
+  gather_facts: false
+
+  vars_files:
+    - "../ansible.plone_server/defaults/main.yml"
+    - "../defaults/main.yml"
+    - "../port_base.yml"
+    - "../host_vars/{{ inventory_hostname }}"
+
+  tasks:
+
+    - name: Copy buildout template
+      template:
+        src=../ansible.plone_server/templates/buildout.cfg.j2
+        dest={{ plone_target_path }}/{{ plone_instance_name }}/buildout.cfg
+        owner=plone_buildout
+        group=plone_group
+        backup=yes
+      register: instance_status
+
+    - name: Run buildout
+      command: bin/buildout
+        chdir={{ plone_target_path }}/{{ plone_instance_name }}
+      sudo_user: plone_buildout
+
+    - name: ensure that var/zeoserver exists
+      file:
+        path={{ plone_var_path }}/{{ plone_instance_name }}/zeoserver
+        state=directory
+
+    - name: Ownership of buildout-cache
+      command: chown -R plone_buildout:plone_group {{ plone_target_path }}/buildout-cache
+
+    - name: Permissions of buildout-cache
+      command: chmod -R u+rwX,g+rX,o+rX {{ plone_target_path }}/buildout-cache
+
+    - name: Ownership of var
+      command: chown -R plone_daemon:plone_group {{ plone_var_path }}/{{ plone_instance_name }}
+
+    - name: Permissions of var
+      command: chmod -R u+rwX,g+rX,o+rX {{ plone_var_path }}/{{ plone_instance_name }}
