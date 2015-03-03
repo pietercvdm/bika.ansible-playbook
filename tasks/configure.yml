@@ -30,6 +30,11 @@
       tags:
         - plone
 
+    - name: ensure that var/zeoserver exists
+      file:
+        path={{ plone_var_path }}/{{ plone_instance_name }}/zeoserver
+        state=directory
+
     # add passwd just in case
     - name: Ensure that admin user is created
       command: bin/client_reserved adduser admin {{ plone_initial_password }}
