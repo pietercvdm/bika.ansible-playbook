@@ -6,6 +6,7 @@
   vars_files:
     - "../ansible.plone_server/defaults/main.yml"
     - "../defaults/main.yml"
+    - "../port_base.yml"
     - "../host_vars/{{ inventory_hostname }}"
 
   tasks:
