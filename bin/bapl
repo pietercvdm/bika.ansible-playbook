@@ -1,0 +1,24 @@
+#!/bin/bash
+
+BIN=$( dirname "${BASH_SOURCE[0]}" )
+USAGE="Usage: $0 PLAY HOST.     eg: $0 stop test_server"
+
+PLAYBOOK=$BIN/../tasks/$1.yml
+if ! [ -f "$PLAYBOOK" ]; then
+    echo Error: No playbook found at $PLAYBOOK
+    echo $USAGE
+    exit 1
+fi
+shift
+
+HOST=$1
+HOSTVARS="$BIN/../host_vars/$HOST"
+if ! [ -f "$HOSTVARS" ]; then
+    echo Error: No host vars found at $HOSTVARS
+    echo $USAGE
+    exit 1
+fi
+shift
+
+
+ansible-playbook -i $BIN/../hosts.cfg --limit $HOST $PLAYBOOK $@

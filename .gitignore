@@ -21,7 +21,6 @@ port_base.yml
 .installed.cfg
 .settings
 bika.lims.egg-info
-bin
 build
 develop-eggs
 dist
