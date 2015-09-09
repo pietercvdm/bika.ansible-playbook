@@ -26,6 +26,9 @@ director {{ inventory_hostname }}_director client {
 
 sub vcl_recv {
     if (req.http.host ~ "^{{ server_name }}$")  { set req.backend = {{ inventory_hostname }}_director; }
+    
+    # Skip caching of API calls to avoid getting stale data
+    if (req.url ~ "/@@API/") { return(pass); }
 }
 
 # store in cache only by url, not backend host
